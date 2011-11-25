@@ -28,7 +28,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.interactive(True)
-from thunderstorm.interact import my_storm
+from thunderstorm.interact import mystorm
 
 def console(variables):
     import os, sys
