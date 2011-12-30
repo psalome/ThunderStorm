@@ -23,7 +23,7 @@ class TLPLeakagePickFigure(object):
     """A simple TLP figure
     """
     def __init__(self, figure, raw_data, title=""):
-        iv_leak = raw_data.iv_leak
+        iv_leak = np.array(raw_data.iv_leak)                 #PSA for data compatibility
         tlp_plot = figure.add_axes((0.1, 0.1, 0.35, 0.8))
         tlp_plot.grid(True)
         tlp_plot.set_xlabel("Voltage (V)")
@@ -75,7 +75,7 @@ class TLPLeakagePickFigure(object):
         leak_plot = self.leak_plot
         leak_plot.hold(False)
         if not((-selected_flag).all()): # if at least one true...
-            leak_plot.plot(self.iv_leak[0][selected_flag].T, self.iv_leak[1][selected_flag].T, 'b')
+            leak_plot.plot(self.iv_leak[selected_flag].T[:,0], self.iv_leak[selected_flag].T[:,1], 'b')   #PSA for data compatibility
             leak_plot.set_visible(True)
             leak_plot.set_title("DC Leakage Curves")
             leak_plot.grid(True)
@@ -103,7 +103,7 @@ class LeakagesFigure(object):
         leak_plot = self.leak_plot
         leak_plot.hold(False)
         if not((-selected_flag).all()): # if at least one true...
-            leak_plot.plot(self.iv_leak[0][selected_flag].T, self.iv_leak[1][selected_flag].T, 'b')
+            leak_plot.plot(self.iv_leak[selected_flag].T[:,0], self.iv_leak[selected_flag].T[:,1], 'b')   #PSA
             leak_plot.grid(True)
             leak_plot.set_xlabel("Voltage (V)")
             leak_plot.set_ylabel("Current (A)")

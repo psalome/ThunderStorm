@@ -138,8 +138,9 @@ def extract_data_from_tcf(tcf_file_name):
 def get_number_of_files_in_dir(pathname):
     """ returns the number of files in a directory """
     file_count = 0
-    for files in walk(pathname):
-        file_count += len(files)
+    list_of_files=walk(pathname)
+    for files in list_of_files:
+        file_count += len(files[2])             #PSA for data compatibility
     return file_count
 
 def read_leak_curves(leak_path):

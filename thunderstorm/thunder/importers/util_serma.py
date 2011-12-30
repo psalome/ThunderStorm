@@ -46,7 +46,7 @@ class ReadSERMA(object):
         data['valim_leak'] = csv_data[0]
         data['tlp'] = csv_data[1:3]
         data['leak_evol'] = csv_data[3]
-        #data['leak_data'] = [] # not implemented
+        data['leak_data'] = [] # not implemented
 
         serma_wfm = SERMATransientRead(base_name)
         (wfm_list, volt_list) = serma_wfm.filecontents
@@ -59,26 +59,20 @@ class ReadSERMA(object):
             tlp_i.append(serma_wfm_data[2])
             offsets_t.append(serma_wfm_data[0][0])
         time_array = serma_wfm_data[0]
-        #time_array = []
         delta_t = time_array[1]-time_array[0]
-        #delta_t = 0.25
         tlp_v = np.asarray(tlp_v)
         tlp_i = np.asarray(tlp_i)
         offsets_t = np.asarray(offsets_t)
         
         serma_leak = SERMALeakageRead(base_name)
         leak_list = serma_leak.filecontents
-        leak_v = []
-        leak_i = []
+
+        leak_table = []
         for filename in leak_list:
             serma_leak_data = serma_leak.data_from_leakage_file(filename)
-            leak_v.append(serma_leak_data[0])
-            leak_i.append(serma_leak_data[1])
-        leak_v = np.asarray(leak_v)
-        leak_i = np.asarray(leak_i)
-
-        data['tlp_leakages'] = np.array((leak_v, leak_i))
-        data['leak_data'] = np.array((leak_v, leak_i))
+            leak_table.append(serma_leak_data)
+        data['tlp_leakages'] = np.array(leak_table)
+        data['leak_data'] = np.array(leak_table)
 
         data['tlp_pulses'] = np.array((tlp_v, tlp_i))
         data['valim_tlp'] = volt_list
