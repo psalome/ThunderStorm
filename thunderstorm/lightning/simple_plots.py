@@ -135,7 +135,7 @@ class LeakageIVsFigure(object):
         ivs_plot.set_ylabel("Current (A)")
         ivs_plot.set_title(title)
         ivs_data = np.array(ivs_data)
-        ivs_plot.plot(ivs_data[:, 0].T, ivs_data[:, 1].T)
+        ivs_plot.plot(ivs_data[:].T[:,0], ivs_data[:].T[:,1])
         self.absolute_current_value = False
         figure.canvas.mpl_connect('key_press_event',
                                   self.on_key_press)
@@ -152,10 +152,10 @@ class LeakageIVsFigure(object):
                 self.absolute_current_value = not(self.absolute_current_value)
                 if self.absolute_current_value:
                     self._ivs_plot.clear()
-                    self._ivs_plot.plot(np.abs(ivs_data[:, 0].T),
-                                        np.abs(ivs_data[:, 1].T))
+                    self._ivs_plot.plot(np.abs(ivs_data[0].T),
+                                        np.abs(ivs_data[1].T))
                 else:
                     self._ivs_plot.clear()
-                    self._ivs_plot.plot(ivs_data[:, 0].T,
-                                        ivs_data[:, 1].T)
+                    self._ivs_plot.plot(ivs_data[0].T,
+                                        ivs_data[1].T)
                 self.draw()
