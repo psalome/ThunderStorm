@@ -48,7 +48,7 @@ class TLPLeakagePickFigure(TLPPickFigure):
                 key_code=ord(event.key) #to get the ASCII code for the combination of keys
           
                 #if event.key == 'a':
-                if key_code == 1: # 'CTRL+a'
+                if key_code == 65: # 'SHIFT+a'
                     selected_flag = self.selected_flag
                     for elem in range(len(self.selected_flag)):
                         self.selected_flag[elem] = True
@@ -62,7 +62,7 @@ class TLPLeakagePickFigure(TLPPickFigure):
                     self.update(self.selected_flag)
                     self.figure.canvas.draw()
                 
-                if key_code == 4: # 'CTRL+d'
+                if key_code == 68: # 'SHIFT+d'
                     selected_flag = self.selected_flag
                     for elem in range(len(self.selected_flag)):
                         self.selected_flag[elem] = False
