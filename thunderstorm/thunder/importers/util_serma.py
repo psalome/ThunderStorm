@@ -35,7 +35,6 @@ class ReadSERMA(object):
     """
     def __init__(self, file_name):
         self.base_file_name = file_name[:-4]
-        #self.base_dir_name = os.path.dirname(file_name)
         self.data = {}
         self._read_data_from_files()
 
@@ -46,7 +45,7 @@ class ReadSERMA(object):
         data['valim_leak'] = csv_data[0]
         data['tlp'] = csv_data[1:3]
         data['leak_evol'] = csv_data[3]
-        data['leak_data'] = [] # not implemented
+        data['leak_data'] = []
 
         serma_wfm = SERMATransientRead(base_name)
         (wfm_list, volt_list) = serma_wfm.filecontents
@@ -63,17 +62,15 @@ class ReadSERMA(object):
         tlp_v = np.asarray(tlp_v)
         tlp_i = np.asarray(tlp_i)
         offsets_t = np.asarray(offsets_t)
-        
+
         serma_leak = SERMALeakageRead(base_name)
         leak_list = serma_leak.filecontents
-
-        leak_table = []
+        leak_data = []
         for filename in leak_list:
             serma_leak_data = serma_leak.data_from_leakage_file(filename)
-            leak_table.append(serma_leak_data)
-        data['tlp_leakages'] = np.array(leak_table)
-        data['leak_data'] = np.array(leak_table)
+            leak_data.append(serma_leak_data)
 
+        data['leak_data'] = leak_data
         data['tlp_pulses'] = np.array((tlp_v, tlp_i))
         data['valim_tlp'] = volt_list
         data['delta_t'] = delta_t * 1e-9
@@ -85,9 +82,9 @@ class ReadSERMA(object):
     def data_to_num_array(self):
         num_data = {}
         for data_name in ('tlp', 'valim_tlp', 'tlp_pulses',
-                          'valim_leak', 'leak_evol', 'offsets_t'):
+                          'valim_leak', 'leak_evol',
+                          'offsets_t', 'leak_data'):
             num_data[data_name] = np.array(self.data[data_name])
-        num_data['leak_data'] = np.array(self.data['leak_data'])
         num_data['delta_t'] = self.data['delta_t']
         return num_data
 
@@ -179,7 +176,7 @@ class SERMATransientRead(object):
 class SERMALeakageRead(object):
     """Utils to extract leakage data from SERMA tester files
     """
-    
+
     def __init__(self, base_dir):
         self.base_dir = os.path.dirname(base_dir)
         self.leak_location = None #determined in filecontents function

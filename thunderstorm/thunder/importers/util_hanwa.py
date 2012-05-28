@@ -90,9 +90,8 @@ class ReadHanwa(object):
         """
         num_data = {}
         for data_name in ('tlp', 'valim_tlp', 'tlp_pulses',
-                          'valim_leak', 'leak_evol'):
+                          'valim_leak', 'leak_evol', 'leak_data'):
             num_data[data_name] = np.array(self.data[data_name])
-        num_data['leak_data'] = self.data['leak_data']
         num_data['delta_t'] = self.data['delta_t']
         return num_data
 
@@ -138,9 +137,8 @@ def extract_data_from_tcf(tcf_file_name):
 def get_number_of_files_in_dir(pathname):
     """ returns the number of files in a directory """
     file_count = 0
-    list_of_files=walk(pathname)
-    for files in list_of_files:
-        file_count += len(files[2])             #PSA for data compatibility
+    for files in walk(pathname):
+        file_count += len(files)
     return file_count
 
 def read_leak_curves(leak_path):
