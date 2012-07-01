@@ -1,0 +1,2 @@
+Date of creation: June 30th,2012
+New Branch named reporting created by P.SALOME to integrate the analysis development and new GUI option to see the reporting.
