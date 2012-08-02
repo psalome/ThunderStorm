@@ -99,9 +99,15 @@ def extract_data_from_csv(tsr_file_name):
         tsr_file_str = tsr_file.read()
     test_result_re = re.compile(r'^Index,.*\]\n(.*)', re.S | re.M)
     data_str = test_result_re.findall(tsr_file_str)
-    data_str_file = StringIO()
-    data_str_file.write(data_str[0])
-    data_str_file.reset()
+    if len(data_str)==0:
+	    data_str=tsr_file_str
+	    data_str_file = StringIO()
+	    data_str_file.write(data_str)
+	    data_str_file.reset()
+    else:
+	    data_str_file = StringIO()
+	    data_str_file.write(data_str[0])
+	    data_str_file.reset()
     data = np.loadtxt(data_str_file, delimiter=',', usecols=(1, 2, 3, 4))
     return data.T
 
@@ -274,3 +280,13 @@ class SERMALeakageRead(object):
         elems = filename.split('.')
         #print( "%s;%i" % (elems[2],int(re.search("\d+",elems[2]).group(0))))
         return int(re.search("\d+",elems[2]).group(0))
+
+	def get_leak_data(self):
+		fileList=self.filecontents()
+		leak=[]
+		for item in fileList:
+			dl=self.data_from_leakage_file(item)
+			leak.append(dl)
+		self.data['leak_data']=np.array(leak)
+		return self.data['leak_data']
+	
