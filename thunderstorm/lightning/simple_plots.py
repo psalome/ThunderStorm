@@ -21,8 +21,12 @@
 Simple typical TLP curves plot
 """
 
-import numpy as np
 import logging
+
+import numpy as np
+
+from .utils import UniversalCursors
+
 
 class PulsesFigure(object):
     """ Plot all transient curve
@@ -50,6 +54,7 @@ class PulsesFigure(object):
         self.i_plot = i_pulse_plot
         figure.canvas.draw()
 
+
 class TLPOverlay(object):
     """ A tool to visualize overlay of TLP I-V curves
     """
@@ -68,9 +73,81 @@ class TLPOverlay(object):
         tlp_plot.set_ylabel("Current (A)")
         tlp_plot.set_title(self.title)
 
-    def add_curve(self, tlp_curve_data):
-        self.tlp_plot.plot(tlp_curve_data[0], tlp_curve_data[1], '-o')
+    def add_curve(self, raw_tlp_data):
+        data = raw_tlp_data.tlp_curve_data
+        self.tlp_plot.plot(data[0], data[1], '-o')
         self.draw()
+
+
+class TLPOverlayWithLeakEvol(object):
+    """ A tool to visualize overlay of TLP I-V curves
+    """
+    def __init__(self, figure, title=""):
+        tlp_plot = figure.add_axes([0.1, 0.1, 0.64, 0.8])
+        leak_evol_plot = figure.add_axes([0.75, 0.1, 0.20, 0.8],
+                                         sharey=tlp_plot)
+        self.cursors = UniversalCursors()
+        curs = self.cursors
+        self.cursor_i = curs.add_cursor((tlp_plot, leak_evol_plot),
+                                        orient='horizontal', lw=1,
+                                        color='r')
+        self.cursor_leak = curs.add_cursor((leak_evol_plot, ),
+                                           orient='vertical', lw=1,
+                                           color='r')
+        self.cursor_v = curs.add_cursor((tlp_plot,),
+                                        orient='vertical', lw=1,
+                                        color='r')
+        self.title = title
+        self.tlp_plot = tlp_plot
+        self.leak_evol_plot = leak_evol_plot
+        self.figure = figure
+        self.draw = figure.canvas.draw
+        self.clean()
+        self.draw()
+
+    def clean(self):
+        self.tlp_plot.cla()
+        self.leak_evol_plot.cla()
+        for label in self.leak_evol_plot.get_yticklabels():
+            label.set_visible(False)
+        self.leak_evol_plot.xaxis.tick_top()
+        self.leak_evol_plot.xaxis.set_label_position('top')
+        # Ensure that (0,0) point is always visible on graph
+        line, = self.tlp_plot.plot(0, 0)
+        line.set_visible(False)
+
+    def decorate(self):
+        tlp_plot = self.tlp_plot
+        tlp_plot.grid(True)
+        tlp_plot.set_xlabel("Voltage (V)")
+        tlp_plot.set_ylabel("Current (A)")
+        tlp_plot.set_title(self.title)
+        leak_evol_plot = self.leak_evol_plot
+        leak_evol_plot.grid(True)
+        leak_evol_plot.locator_params(axis='x', nbins=4)
+
+    def add_curve(self, raw_tlp_data):
+        line, = self.tlp_plot.plot(raw_tlp_data.tlp_curve[0],
+                                   raw_tlp_data.tlp_curve[1], '-o')
+        if raw_tlp_data.has_leakage_evolution:
+            self.leak_evol_plot.semilogx(raw_tlp_data.leak_evol,
+                                         raw_tlp_data.tlp_curve[1],
+                                         '%s-o' % line.get_color(),
+                                         markersize=2)
+            self.leak_evol_plot.xaxis.get_major_locator().numticks = 3
+        else:
+            log = logging.getLogger('thunderstorm.lightning')
+            log.warn("Leakage evolution cannot be plotted, no data")
+            # Need to update y bound of leak plot if no leakage data
+            # for proper autoscaling
+            self.tlp_plot.relim()
+            lim_tlp = self.tlp_plot.dataLim
+            lim_leak = self.leak_evol_plot.dataLim
+            lim_leak.update_from_data_xy(zip(lim_leak.intervalx,
+                                             lim_tlp.intervaly))
+            self.tlp_plot.autoscale_view()
+        self.draw()
+
 
 class TLPFigure(object):
     """A simple TLP figure
@@ -84,7 +161,7 @@ class TLPFigure(object):
         tlp_plot.set_title(title)
         tlp_plot.plot(tlp_curve_data[0], tlp_curve_data[1], '-o')
 
-        if leakage_evol == None:
+        if leakage_evol is None:
             log = logging.getLogger('thunderstorm.lightning')
             log.warn("Leakage evolution cannot be plotted, no data")
         else:
@@ -125,6 +202,7 @@ class TLPFigure(object):
                 self._leak_evol_with_v.set_visible(leak_state[1])
                 self.draw()
 
+
 class LeakageIVsFigure(object):
     """Plot all leakge-iv data
     """
@@ -135,7 +213,7 @@ class LeakageIVsFigure(object):
         ivs_plot.set_ylabel("Current (A)")
         ivs_plot.set_title(title)
         ivs_data = np.array(ivs_data)
-        ivs_plot.plot(ivs_data[:,0].T, ivs_data[:,1].T)
+        ivs_plot.plot(ivs_data[:, 0].T, ivs_data[:, 1].T)
         self.absolute_current_value = False
         figure.canvas.mpl_connect('key_press_event',
                                   self.on_key_press)
@@ -152,10 +230,10 @@ class LeakageIVsFigure(object):
                 self.absolute_current_value = not(self.absolute_current_value)
                 if self.absolute_current_value:
                     self._ivs_plot.clear()
-                    self._ivs_plot.semilogy(ivs_data[:,0].T,
-                                        np.abs(ivs_data[:,1].T))
+                    self._ivs_plot.plot(np.abs(ivs_data[:, 0].T),
+                                        np.abs(ivs_data[:, 1].T))
                 else:
                     self._ivs_plot.clear()
-                    self._ivs_plot.plot(ivs_data[:,0].T,
-                                        ivs_data[:,1].T)
+                    self._ivs_plot.plot(ivs_data[:, 0].T,
+                                        ivs_data[:, 1].T)
                 self.draw()

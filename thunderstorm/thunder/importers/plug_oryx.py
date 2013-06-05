@@ -21,12 +21,13 @@
 Import module for Oryx TLP setup data
 """
 
-from thunderstorm.thunder.importers.tools import ImportPlugin
-from thunderstorm.thunder.importers.util_oryx import ReadOryx
-from thunderstorm.thunder.tlp import RawTLPdata
-from thunderstorm.thunder.pulses import IVTime
 import os
 import logging
+
+from .tools import ImportPlugin
+from .util_oryx import ReadOryx
+from ..tlp import RawTLPdata
+from ..pulses import IVTime
 
 
 class ImportOryx(ImportPlugin):
@@ -46,7 +47,7 @@ class ImportOryx(ImportPlugin):
         file_path = os.path.realpath(file_name)
         alldata = ReadOryx(file_name)
         data = alldata.data_to_num_array
-        if data['waveform_available'] == True:
+        if data['waveform_available']:
             pulses = IVTime(data['tlp_pulses'].shape[2],
                             data['tlp_pulses'].shape[1],
                             delta_t=data['delta_t'],
@@ -60,8 +61,6 @@ class ImportOryx(ImportPlugin):
         leak_evol = data['leak_evol']
         raw_data = RawTLPdata('not implemented', pulses, iv_leak,
                               tlp_curve, leak_evol, file_path,
-                              tester_name = self.label)
+                              tester_name=self.label)
         log.info("Importing Oryx data. Done!")
         return raw_data
-
-

@@ -27,7 +27,11 @@ Only plugin files starting with "plug" followed by underscore and ending with
 import_plugs variable contains all the import plugins
 
 """
-from thunderstorm.thunder.tlp import Experiment
+
+from os.path import basename, splitext
+
+from ..tlp import Droplet, H5IVTime
+
 
 class ImportPlugin(object):
     """Generic import plugin class"""
@@ -37,7 +41,7 @@ class ImportPlugin(object):
     def __init__(self):
         pass
 
-    def import_data(self,filename):
+    def import_data(self, filename):
         """Must return the data to be plotted
         return a RawTLPdata instance
         """
@@ -49,24 +53,46 @@ class ImportPlugin(object):
         """
         return "%s" % (self.__class__.__name__)
 
-    def load(self, file_name, experiment_name=""):
-        """import data and pack them in an experiment
-        return an experiment
+    def raw_data_from_file(self, file_name):
+        return self.import_data(file_name)
+
+    @staticmethod
+    def load_in_droplet(raw_data, h5file, exp_name=None):
+        if exp_name is None:
+            exp_name = splitext(basename(raw_data.original_file_name))[0]
+        h5group = h5file.create_group(exp_name)
+        if raw_data.has_transient_pulses:
+            data = H5IVTime(h5group)
+            data.import_ivtime(raw_data.pulses)
+        h5group['tlp_curve'] = raw_data.tlp_curve
+        h5group.attrs['device_name'] = raw_data.device_name
+        h5group.attrs['tester_name'] = raw_data.tester_name
+        h5group.attrs['original_file_path'] = str(raw_data.original_file_name)
+        if raw_data.has_leakage_evolution:
+            h5group['leak_evol'] = raw_data.leak_evol
+        if raw_data.has_leakage_ivs:
+            h5group['iv_leak'] = raw_data.iv_leak
+        h5file.flush()
+        return Droplet(h5group)
+
+    def load(self, file_name, exp_name=None, h5file=None):
+        """import data and pack them in a droplet
+        return the droplet
         """
-        raw_data = self.import_data(file_name)
-        return Experiment(raw_data, experiment_name)
+        raw_data = self.raw_data_from_file(file_name)
+        return self.load_in_droplet(raw_data, h5file, exp_name)
 
 
 def _init():
     """Activate importer plugins
-    available in importers this directory
+    available in this directory
     """
-    import plug_laas
-    import plug_oryx
-    import plug_hppi
-    import plug_serma
-    import plug_hanwa
-    import plug_barth
+    from . import plug_laas
+    from . import plug_oryx
+    from . import plug_hppi
+    from . import plug_serma
+    from . import plug_hanwa
+    from . import plug_barth
     plug_dict = {}
     for plug in ImportPlugin.__subclasses__():
         plug_dict[plug.label] = plug

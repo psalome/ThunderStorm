@@ -22,13 +22,14 @@ Utils to read data from Oryx TLP setup file
 This file was greatly improved with the help of Justin Katz
 """
 
-import numpy as np
 from zipfile import ZipFile
 from cStringIO import StringIO
 import re
 import logging
 import os
 import glob
+
+import numpy as np
 
 
 class ReadOryx(object):
@@ -86,7 +87,7 @@ class ReadOryx(object):
         num_data = {}
         for data_name in ('tlp', 'valim_tlp', 'tlp_pulses',
                           'valim_leak', 'leak_evol',
-                          'leak_data', 'offsets_t'):
+                          'offsets_t', 'leak_data'):
             num_data[data_name] = np.array(self.data[data_name])
         num_data['delta_t'] = self.data['delta_t']
         num_data['waveform_available'] = self.data['waveform_available']
@@ -157,7 +158,7 @@ class OryxTransientZip(object):
         elif os.path.exists(zfilename[:-4]):
             #if a folder exist create the zip file
             zfile = ZipFile(zfilename, 'w')
-            for filename in glob.glob(zfilename[:-4]+'/*'):
+            for filename in glob.glob(zfilename[:-4] + '/*'):
                 zfile.write(filename, os.path.basename(filename))
             zfile.close()
             self.zipcreated = zfilename
@@ -200,9 +201,9 @@ class OryxTransientZip(object):
         # filename format
         # for TLP voltage: 04-29-09_05'40'45_PM_TlpVolt_90V.wfm
         # for TLP current: 04-29-09_05'40'45_PM_TlpCurr_90V.wfm
-        voltages_dict = {'TlpCurr' : [], 'TlpVolt' : [],
-                         'TlpVMonCh3' : [], 'TlpVMonCh4' : [],
-                         'TlpVoltCh3' : [], 'TlpVoltCh4' : []}
+        voltages_dict = {'TlpCurr': [], 'TlpVolt': [],
+                         'TlpVMonCh3': [], 'TlpVMonCh4': [],
+                         'TlpVoltCh3': [], 'TlpVoltCh4': []}
         for filename in self.zfile.namelist():
             if filename[-4:] == ".wfm":
                 elems = filename[:-5].split('_')
@@ -219,4 +220,3 @@ class OryxTransientZip(object):
         volt_list = self.supply_voltage_list
         basename = '_'.join(self.zfile.namelist()[0].split('_')[0:3])
         return (basename, volt_list)
-

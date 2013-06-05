@@ -21,11 +21,13 @@ Tools to observe leakage curves corresponding to TLP points
 """
 
 import numpy as np
-from tlp_observer import TLPPickFigure
+
+from .tlp_observer import TLPPickFigure
 
 
 class TLPLeakagePickFigure(TLPPickFigure):
-    """TLP picking tool showing leakage ivs
+    """
+    TLP picking tool showing leakage ivs
     """
     def __init__(self, figure, raw_data, title=""):
         # init tlp pick plot
@@ -40,49 +42,27 @@ class TLPLeakagePickFigure(TLPPickFigure):
         self.iv_leak = raw_data.iv_leak
         self.leak_plot_lines = None
         self.leak_plot = leak_plot
-        figure.canvas.mpl_connect('key_press_event', self.on_key_press)
+        #Plot the very first leakage curve
+        leak_plot.plot(self.iv_leak[0][0],
+                       self.iv_leak[0][1],
+                       '--k')
 
-    def on_key_press(self, event):
-        if event.inaxes:
-            if len(event.key) == 1:
-                key_code=ord(event.key) #to get the ASCII code for the combination of keys
-          
-                #if event.key == 'a':
-                if key_code == 65: # 'SHIFT+a'
-                    selected_flag = self.selected_flag
-                    for elem in range(len(self.selected_flag)):
-                        self.selected_flag[elem] = True
-                    if self.selected_point != None:
-                        self.selected_point.remove()                    
-                    indexes = np.linspace(0, 1, self.selected_flag.sum())
-                    self.selected_point = self.tlp_plot.scatter(self.volt[self.selected_flag],
-                                                                    self.curr[self.selected_flag],
-                                                                    c=indexes, s=40, zorder=3,
-                                                                    cmap=self.color_map)
-                    self.update(self.selected_flag)
-                    self.figure.canvas.draw()
-                
-                if key_code == 68: # 'SHIFT+d'
-                    selected_flag = self.selected_flag
-                    for elem in range(len(self.selected_flag)):
-                        self.selected_flag[elem] = False
-                    self.selected_point.set_visible(False)  
-                    self.selected_point = None                                                                 
-                    self.update(self.selected_flag)
-                    self.figure.canvas.draw()                    
-        
-    def update(self, selected_flag):
+    def update(self):
         leak_plot = self.leak_plot
-        if self.leak_plot_lines != None:
+        selected_flag = self.selected_flag
+        if self.leak_plot_lines is not None:
             for line in self.leak_plot_lines:
                 line.remove()
-        if not((-selected_flag).all()): # if at least one true...
+        if not((-selected_flag).all()):  # if at least one true...
             indexes = np.linspace(0, 1, selected_flag.sum())
             colors = self.color_map(indexes)
             leak_plot.axes.set_color_cycle(colors)
-            data = self.iv_leak[selected_flag].T
-            self.leak_plot_lines = leak_plot.plot(data[:,0], data[:,1])
+            #Do not forget the very first leakage curve
+            #is always visible
+            data = self.iv_leak[1:][selected_flag].T
+            self.leak_plot_lines = leak_plot.plot(data[:, 0],
+                                                  data[:, 1])
         else:
             self.leak_plot_lines = None
             #Should print something on the graph to say "please select
-            # a point on TLP plot"            
+            # a point on TLP plot"

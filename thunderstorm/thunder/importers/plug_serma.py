@@ -21,12 +21,14 @@
 Import module for SERMA TLP setup data
 """
 
-from thunderstorm.thunder.importers.tools import ImportPlugin
-from thunderstorm.thunder.importers.util_serma import ReadSERMA
-from thunderstorm.thunder.tlp import RawTLPdata
-from thunderstorm.thunder.pulses import IVTime
 import os
 import logging
+
+from .tools import ImportPlugin
+from .util_serma import ReadSERMA
+from ..tlp import RawTLPdata
+from ..pulses import IVTime
+
 
 class ImportSERMA(ImportPlugin):
     """Import data from SERMA TLP setup
@@ -57,7 +59,6 @@ class ImportSERMA(ImportPlugin):
         leak_evol = data['leak_evol']
         raw_data = RawTLPdata('not implemented', pulses, iv_leak,
                               tlp_curve, leak_evol, file_path,
-                              tester_name = self.label)
+                              tester_name=self.label)
         log.info("Importing SERMA data. Done!")
         return raw_data
-

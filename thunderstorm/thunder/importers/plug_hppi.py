@@ -21,12 +21,13 @@
 Import module for HPPI TLP setup data
 """
 
-from thunderstorm.thunder.importers.tools import ImportPlugin
-from thunderstorm.thunder.importers.util_hppi import ReadHPPI
-from thunderstorm.thunder.tlp import RawTLPdata
-from thunderstorm.thunder.pulses import IVTime
 import os
 import logging
+
+from .tools import ImportPlugin
+from .util_hppi import ReadHPPI
+from ..tlp import RawTLPdata
+from ..pulses import IVTime
 
 
 class ImportHPPI(ImportPlugin):
@@ -58,8 +59,6 @@ class ImportHPPI(ImportPlugin):
         leak_evol = data['leak_evol']
         raw_data = RawTLPdata('not implemented', pulses, iv_leak,
                               tlp_curve, leak_evol, file_path,
-                              tester_name = self.label)
+                              tester_name=self.label)
         log.info("Importing HPPI data. Done!")
         return raw_data
-
-

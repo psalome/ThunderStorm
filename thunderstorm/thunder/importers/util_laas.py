@@ -21,8 +21,10 @@
 Read the data from LAAS TLP setup file
 """
 
-import numpy as np
 import logging
+
+import numpy as np
+
 
 class ReadLAAS(object):
     """
@@ -46,7 +48,7 @@ class ReadLAAS(object):
             return [[0.0, 0.0]]
         data = []
         while dat_line:
-            dat = dat_line.split()[0:nb_col+1]
+            dat = dat_line.split()[0:nb_col + 1]
             dat = [float(x) for x in dat]
             data.append(dat)
             dat_line = datafile.readline()[:-1]
@@ -124,7 +126,7 @@ class ReadLAAS(object):
                           'valim_leak'):
             num_data[data_name] = np.array(self.data[data_name])
         num_data['leak_data'] = np.array([np.array(dat).transpose()
-                                 for dat in self.data['leak_data']])
+                                          for dat in self.data['leak_data']])
         num_data['tlp'] = num_data['tlp'].transpose()[1:]
         num_data['tlp_pulses'] = np.array([x.transpose()
                                             for x in num_data['tlp_pulses']])

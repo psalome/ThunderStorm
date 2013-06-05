@@ -20,9 +20,10 @@
 Tools to observe transient curves corresponding to TLP points
 """
 
-
-from tlp_observer import TLPPickFigure
 import numpy as np
+
+from .tlp_observer import TLPPickFigure
+
 
 class TLPPulsePickFigure(TLPPickFigure):
     """
@@ -47,53 +48,23 @@ class TLPPulsePickFigure(TLPPickFigure):
         i_pulse_plot.set_ylabel("Current")
 
         # Init object attributes
-        self.offseted_time = offseted_time * 1e9 # time in nanosecond
+        self.offseted_time = offseted_time * 1e9  # time in nanosecond
         self.v_pulse_plot = v_pulse_plot
         self.v_pulse_lines = None
         self.i_pulse_plot = i_pulse_plot
         self.i_pulse_lines = None
         self.pulses = raw_data.pulses
-        figure.canvas.mpl_connect('key_press_event', self.on_key_press)
 
-    def on_key_press(self, event):
-        if event.inaxes:
-            if len(event.key) == 1:
-                key_code=ord(event.key) #to get the ASCII code for the combination of keys
-          
-                #if event.key == 'a':
-                if key_code == 65: # 'CTRL+a'
-                    selected_flag = self.selected_flag
-                    for elem in range(len(self.selected_flag)):
-                        self.selected_flag[elem] = True
-                    if self.selected_point != None:
-                        self.selected_point.remove()                    
-                    indexes = np.linspace(0, 1, self.selected_flag.sum())
-                    self.selected_point = self.tlp_plot.scatter(self.volt[self.selected_flag],
-                                                                    self.curr[self.selected_flag],
-                                                                    c=indexes, s=40, zorder=3,
-                                                                    cmap=self.color_map)
-                    self.update(self.selected_flag)
-                    self.figure.canvas.draw()
-                
-                if key_code == 68: # 'CTRL+d'
-                    selected_flag = self.selected_flag
-                    for elem in range(len(self.selected_flag)):
-                        self.selected_flag[elem] = False
-                    self.selected_point.set_visible(False)  
-                    self.selected_point = None                                                                 
-                    self.update(self.selected_flag)
-                    self.figure.canvas.draw()            
-
-
-    def update(self, selected_flag):
+    def update(self):
         v_pulse_plot = self.v_pulse_plot
         i_pulse_plot = self.i_pulse_plot
-        if self.v_pulse_lines != None:
+        selected_flag = self.selected_flag
+        if self.v_pulse_lines is not None:
             for line in self.v_pulse_lines:
                 line.remove()
             for line in self.i_pulse_lines:
                 line.remove()
-        if not((-selected_flag).all()): # if at least one true...
+        if not((-selected_flag).all()):  # if at least one true...
             indexes = np.linspace(0, 1, selected_flag.sum())
             colors = self.color_map(indexes)
             v_pulse_plot.axes.set_color_cycle(colors)
@@ -111,4 +82,3 @@ class TLPPulsePickFigure(TLPPickFigure):
             self.i_pulse_lines = None
             #Should print something on the graph to say "please select
             # a point on TLP plot"
-
